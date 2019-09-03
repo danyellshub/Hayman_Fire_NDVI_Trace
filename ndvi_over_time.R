@@ -10,14 +10,17 @@ ndvi <- read_csv('data/hayman_ndvi.csv') %>%
          !is.na(unburned))
 
 # Converting from wide to long data
-ndvi_long <- gather(ndvi,key='site',value='NDVI',-DateTime)
+ndvi_long <- gather(ndvi,
+                    key='site',
+                    value='NDVI',
+                    -DateTime)
 
 # Plotting all the data
 ggplot(ndvi_long,aes(x=DateTime,y=NDVI,color=site)) +
   geom_point(shape=1) + 
   geom_line() +
-  theme_few() + 
-  scale_color_few() + 
+  theme_few() +
+  scale_color_few() +
   theme(legend.position=c(0.3,0.3))
 
 # Summarizing the data by year
@@ -36,6 +39,36 @@ ggplot(ndvi_annual,aes(x=year,y=mean_NDVI,color=site)) +
   scale_color_few() + 
   theme(legend.position=c(0.3,0.3))
 
+# Summarizing the data by month
+ndvi_month <- ndvi_long %>%
+  mutate(year=year(DateTime)) %>%
+  mutate(month=month(DateTime)) %>%
+  group_by(site,month) %>%
+  summarize(mean_NDVI=mean(NDVI))
 
+#Here making a month plot
+ggplot(ndvi_month,aes(x=month,y=mean_NDVI,color=site)) +
+  geom_point(shape=1) + 
+  geom_line() +
+  theme_few() + 
+  scale_color_few() + 
+  theme(legend.position=c(0.6,0.2))
 
+#pre post analysis
+ndvi_month_pre_post <- ndvi_long %>%
+  mutate(year = year(DateTime),
+         month = month(DateTime),
+         treatment = cut(year, breaks = c(0,2003,2020),
+                         labels = c('pre-burn', 'post-burn'))) %>%
+  group_by(month, site, treatment) %>%
+  summarize(mean_ndvi = mean(NDVI))
 
+ggplot(ndvi_month_pre_post,aes(x=month,y=mean_ndvi,color=treatment)) +
+  geom_point(shape=1) + 
+  geom_line() +
+  theme_few() + 
+  scale_color_few() + 
+  theme(legend.position=c(0.6,0.2)) +
+  facet_wrap(~site)
+
+         
