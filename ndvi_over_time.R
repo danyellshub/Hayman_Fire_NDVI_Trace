@@ -3,7 +3,7 @@ library(tidyr)
 library(ggthemes)
 library(lubridate)
 
-#Reading in the data. 
+#Reading in the data and removing na 
 ndvi <- read_csv('data/hayman_ndvi.csv') %>%
   rename(burned=2,unburned=3) %>%
   filter(!is.na(burned),
