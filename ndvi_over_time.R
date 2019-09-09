@@ -43,7 +43,7 @@ ggplot(ndvi_annual,aes(x=year,y=mean_NDVI,color=site)) +
 ndvi_month <- ndvi_long %>%
   mutate(year=year(DateTime)) %>%
   mutate(month=month(DateTime)) %>%
-  group_by(site,month) %>%
+  group_by(site,month)%>%
   summarize(mean_NDVI=mean(NDVI))
 
 #Here making a month plot

@@ -23,7 +23,7 @@ ndvi <- read_csv(files[3])%>%
 #str(full) #to see if columns/rows/vectors are numerical, categoircal, data, etc
 
 #join all data sets together and rename columns
-full_wide <- inner_join(ndmi %>% dplyr::select(-data), 
+full_wide <- inner_join(ndmi%>% dplyr::select(-data), 
                         ndvi %>% dplyr::select(-data), 
                         by='DateTime') %>%
   inner_join(ndsi %>% dplyr::select(-data),by='DateTime') %>%
