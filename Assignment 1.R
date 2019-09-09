@@ -57,10 +57,6 @@ ggplot(wide, aes(x=ndmi, y=ndvi, color=site))+
 #In other words, does the previous year's snow cover influence vegetation
 # growth for the following summer? 
 
-#ndsi_ndvi_long <- full_long %>%
-  #mutate(month=month(DateTime))%>%
-  #filter(!data %in% 'ndmi')
-
 ndsi_months <-ndsi%>%
   mutate(month=month(DateTime))%>%
   mutate(year=year(DateTime))%>%
@@ -70,7 +66,8 @@ ndsi_months <-ndsi%>%
          value='value',
          -DateTime,-month,-data,-year)%>%
   group_by(year) %>%
-  summarize(mean_ndsi=mean(value))
+  summarize(value=mean(value))%>%
+  mutate(data = 'ndsi')
 
 
 ndvi_months <-ndvi%>%
@@ -82,15 +79,17 @@ ndvi_months <-ndvi%>%
          value='value',
          -DateTime,-month,-data, -year)%>%
   group_by(year) %>%
-  summarize(mean_ndvi=mean(value))
+  summarize(value=mean(value))%>%
+  mutate(data = 'ndvi')
 
-ndvi_ndsi <- bind_rows(ndsi_months, ndvi_months)
-  gather(key='data',value='value',-year)%>%
-  filter(!is.na(value))
+ndvi_ndsi <-inner_join(ndvi_months %>% dplyr::select(-data), 
+                          ndsi_months %>% dplyr::select(-data), 
+                          by='year')%>%
+  rename(ndvi = 2, ndsi = 3)
   
-ggplot(ndvi_ndsi, aes(x=value, y=data, color=year))+
-  geom_point()
-
+ggplot(ndvi_ndsi, aes(x=ndsi, y=ndvi, color=year))+
+  geom_point()+
+  theme_few()
 
 ## End code for question 2 -----------------
 
