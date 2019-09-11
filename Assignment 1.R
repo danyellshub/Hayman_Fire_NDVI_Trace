@@ -70,18 +70,18 @@ full_wide <- wide %>%
 
 summer_months <- full_wide%>%
   filter(month %in% c(6,7,8))%>%
-  group_by(site, year)%>%
+  group_by(year)%>%
   summarise(mean_NDVI = mean(ndvi))
   
 winter_months <- full_wide%>%
   filter(month %in% c(1,2,3,4))%>%
-  group_by(site, year)%>%
+  group_by(year)%>%
   summarise(mean_NDSI = mean(ndsi))
 
 #I am stuck here 
-ndsi_ndvi_mean <- inner_join(summer_months %>% dplyr::select(~site), 
-                             winter_months %>% dplyr::select(~site),
-                             by = "year")
+ndsi_ndvi_mean <- inner_join(summer_months %>% dplyr::select(mean_NDVI, year), 
+                             winter_months %>% dplyr::select(mean_NDSI, year),
+                             by ="year")
 
 ggplot(ndsi_ndvi_mean, aes(x=mean_NDSI, y=mean_NDVI, color=year))+
   geom_point()+
@@ -122,6 +122,7 @@ ndvi_ndsi <-inner_join(ndvi_months %>% dplyr::select(-data),
                           by='year')%>%
   rename(ndvi = 2, ndsi = 3)
   
+
 ggplot(ndvi_ndsi, aes(x=ndsi, y=ndvi, color=year))+
   geom_point()+
   theme_few()
