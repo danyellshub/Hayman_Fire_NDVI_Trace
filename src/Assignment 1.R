@@ -41,12 +41,17 @@ full_long <- rbind(ndvi,ndmi,ndsi) %>%
 wide<- full_long %>%
   spread(key='data',value='value')
 
-ggplot(wide, aes(x=ndmi, y=ndvi, color=site))+
-  geom_point()+
-  theme_few()+
+summer_only <- wide%>%
+  mutate(month = month(DateTime),
+         year = year(DateTime))%>%
+  filter(month %in% c(6,7,8,9))
+
+ggplot(summer_only,aes(x=ndmi,y=ndvi,color=site)) + 
+  geom_point() + 
+  theme_few() + 
   scale_color_few() + 
-  theme(legend.position=c(0.3,0.2))
-  
+  theme(legend.position=c(0.8,0.8))
+
 ## End Code for Question 1 -----------
 
 
