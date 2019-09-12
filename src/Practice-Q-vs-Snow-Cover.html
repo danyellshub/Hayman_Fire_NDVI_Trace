@@ -380,7 +380,9 @@ summary {
 <pre class="r"><code>library(tidyverse) 
 library(lubridate)
 library(dataRetrieval)#for downloading USGS data
-library(ggthemes)</code></pre>
+library(ggthemes)
+
+knitr::opts_knit$set(root.dir='../')</code></pre>
 <pre class="r"><code>#ndsi 
 ndsi &lt;- read_csv('data/hayman_ndsi.csv') %&gt;%
   rename(burned=2,unburned=3) %&gt;%

@@ -17,7 +17,6 @@ ndmi <- read_csv(files[1]) %>%
   rename(burned=2,unburned=3) %>%
   mutate(data='ndmi')
 
-
 ndsi <- read_csv(files[2]) %>% 
   rename(burned=2,unburned=3) %>%
   mutate(data='ndsi')
@@ -57,12 +56,6 @@ ggplot(wide, aes(x=ndmi, y=ndvi, color=site))+
 #In other words, does the previous year's snow cover influence vegetation
 # growth for the following summer? 
 
-
-#This is code to see mean NDSI vs NDMI in the specified months
-#the unburned and burned sites are treated as separate, hence,
-#four points per year, but the table seemed to copy weird with interjoin
-
-
 full_wide <- wide %>%
   mutate(month=month(DateTime))%>%
   mutate(year=year(DateTime))%>%
@@ -70,28 +63,25 @@ full_wide <- wide %>%
 
 summer_months <- full_wide%>%
   filter(month %in% c(6,7,8))%>%
-  group_by(year)%>%
+  group_by(year, site)%>%
   summarise(mean_NDVI = mean(ndvi))
   
 winter_months <- full_wide%>%
   filter(month %in% c(1,2,3,4))%>%
-  group_by(year)%>%
+  group_by(year, site)%>%
   summarise(mean_NDSI = mean(ndsi))
 
-#I am stuck here 
-ndsi_ndvi_mean <- inner_join(summer_months %>% dplyr::select(mean_NDVI, year), 
-                             winter_months %>% dplyr::select(mean_NDSI, year),
-                             by ="year")
+ndsi_ndvi_mean <- inner_join(summer_months, 
+                             winter_months,
+                             by = c("year", "site"))
 
-ggplot(ndsi_ndvi_mean, aes(x=mean_NDSI, y=mean_NDVI, color=year))+
+ggplot(ndsi_ndvi_mean, aes(x=mean_NDSI, y=mean_NDVI, color=site))+
   geom_point()+
   theme_few()
 
 
-
-#This work is to see NDSI vs NDMI in the specified months
-#irrelevant to the site, per year.
-#the two sites were avereaged into one value
+#This is an alternative that shows correlation by year
+#I just wanted to keep the code for future reference
 ndsi_months <-ndsi%>%
   mutate(month=month(DateTime))%>%
   mutate(year=year(DateTime))%>%
@@ -120,10 +110,10 @@ ndvi_months <-ndvi%>%
 ndvi_ndsi <-inner_join(ndvi_months %>% dplyr::select(-data), 
                           ndsi_months %>% dplyr::select(-data), 
                           by='year')%>%
-  rename(ndvi = 2, ndsi = 3)
+  rename(mean_ndvi = 2, mean_ndsi = 3)
   
 
-ggplot(ndvi_ndsi, aes(x=ndsi, y=ndvi, color=year))+
+ggplot(ndvi_ndsi, aes(x=mean_ndsi, y=mean_ndvi, color=year))+
   geom_point()+
   theme_few()
 
@@ -134,25 +124,24 @@ ggplot(ndvi_ndsi, aes(x=ndsi, y=ndvi, color=year))+
 #How is the snow effect from question 2 different between pre- and post-burn
 # and burned and unburned? 
 
-#This code I worked with Kevin and Riley
-pre_fire <- filter(full_wide, year <=2002)%>%
-  filter(!is.na(ndmi), !is.na(ndsi), !is.na(ndvi))
-post_fire <- filter(full_wide, year >2002)%>%
-  filter(!is.na(ndmi), !is.na(ndsi), !is.na(ndvi))
+pre_post <- ndsi_ndvi_mean %>%
+  mutate(condition = if_else(year >= 2002, "post", "pre"))
 
-ggplot(pre_fire, aes(x=ndsi, y=ndvi, color=site))+
+ggplot(pre_post, aes(x=mean_NDSI, y=mean_NDVI, color=site))+
   geom_point()+
-  theme_few()
-
-ggplot(post_fire, aes(x=ndsi, y=ndvi, color=site))+
-  geom_point()+
-  theme_few()
+  theme_few()+
+  facet_wrap(~condition)
 
 ## End code for question 3
 
 ###### Question 4 #####
 #What month is the greenest month on average? Does this change in the burned
 # plots after the fire? 
+
+#Month 8 (August)
+#No it does not change, the value is just less. Refer to figure.
+#Part 1 of this quesiton included both burned and unburned sites for avg ndvi, 
+#Part 2 of this question only averaged the burned sites, pre and post fire
 
 ndvi_means <- ndvi%>%
   filter(!is.na(burned), !is.na(unburned))%>%
@@ -162,9 +151,9 @@ ndvi_means <- ndvi%>%
          value='value',
          -DateTime,-month,-data, -year)%>%
   group_by(month)%>%
-  summarise('mean_NDVI'=mean(value))
+  summarise('mean_ndvi'=mean(value))
 
-ggplot(ndvi_full, aes(x=month, y=mean_NDVI))+
+ggplot(ndvi_means, aes(x=month, y=mean_ndvi))+
   geom_point()+
   theme_few()
 
@@ -173,29 +162,23 @@ ndvi_pre_fire_means <- ndvi%>%
   mutate(month=month(DateTime))%>%
   mutate(year=year(DateTime))%>%
   filter(year <= 2002)%>%
-  gather(key='site',
-         value='value',
-         -DateTime,-month,-data, -year)%>%
   group_by(month)%>%
-  summarise('mean_NDVI'=mean(value))
+  summarise('mean_ndvi_burned'=mean(burned))
 
 ndvi_post_fire_means <- ndvi%>%
   filter(!is.na(burned), !is.na(unburned))%>%
   mutate(month=month(DateTime))%>%
   mutate(year=year(DateTime))%>%
   filter(year > 2002)%>%
-  gather(key='site',
-         value='value',
-         -DateTime,-month,-data, -year)%>%
   group_by(month)%>%
-  summarise('mean_NDVI'=mean(value))
+  summarise('mean_ndvi_burned'=mean(burned))
 
 joined_pre_post <-inner_join(ndvi_pre_fire_means, ndvi_post_fire_means, by = 'month')%>%
   rename(Pre_Fire = 2, Post_Fire =3)%>%
   gather(key='site',
-        value='mean_ndvi',-month)
+        value='mean_ndvi_burned',-month)
 
-ggplot(joined_pre_post, aes(x=month, y=mean_ndvi, color=site))+
+ggplot(joined_pre_post, aes(x=month, y=mean_ndvi_burned, color=site))+
   geom_point()+
   theme_few()+
   theme(legend.position=c(0.69,0.2))

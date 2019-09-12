@@ -2,7 +2,7 @@
 title: "NDVI Trace in Hayman Fire"
 author: "Danielle Reimanis"
 date: "9/9/2019"
-output: html_document
+output: pdf_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -13,6 +13,8 @@ library(tidyr)
 library(ggthemes)
 library(lubridate)
 knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_knit$set(root.dir='../')
 ```
 
 ## Hayman Fire

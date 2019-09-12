@@ -19,7 +19,12 @@ library(lubridate)
 library(dataRetrieval)#for downloading USGS data
 library(ggthemes)
 
+knitr::opts_knit$set(root.dir='../')
 
+```
+
+
+```{r,echo=T, warning = FALSE, message = FALSE}
 #ndsi 
 ndsi <- read_csv('data/hayman_ndsi.csv') %>%
   rename(burned=2,unburned=3) %>%
@@ -40,6 +45,7 @@ q_hayman <- readNWISdata(sites=c('06700000'), #Site code
          quality_cd = X_00060_00003_cd) %>% #rename long column name
   filter(!is.na(q_cfs)) %>% #Drop NAs which can occur when there is ice or sensor breaks
   as_tibble() #To make it act like a tibble
+
 ```
 
 ### Data Exploring
@@ -132,7 +138,7 @@ ggplot(q_vs_snow_full, aes(x=mean_ndsi, y=median_q, color=wtr_yr))+
 ```
 
 ### Max Snow vs. Median Q
-```{r}
+```{r echo=F}
 
 ggplot(q_vs_snow_full, aes(x=max_ndsi, y=median_q, color=wtr_yr))+
   geom_point()+
