@@ -2,7 +2,13 @@
 title: "Snow cover impacts on watershed discharge"
 author: "Danielle Reimanis"
 date: "9/10/2019"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 6
+  smooth_scroll: true
 ---
 
 # How do remotely sensed snow cover metrics impacts dischage in the same water year in central Colorado?
@@ -11,16 +17,19 @@ output: html_document
 
 ### Data read in
 
-######## First we need to get our snow metric (ndsi) data and then also download discharge data from the USGS
+####### First we need to get our snow metric (ndsi) data and then also download discharge data from the USGS
 
 ```{r setup, warning = FALSE, message = FALSE}
 library(tidyverse) 
 library(lubridate)
 library(dataRetrieval)#for downloading USGS data
+
+```
+
+```{r echo=F}
 library(ggthemes)
 
 knitr::opts_knit$set(root.dir='../')
-
 ```
 
 
@@ -133,7 +142,7 @@ q_vs_snow_full <- inner_join(q_means, snow_means, by = 'wtr_yr')
 
 ggplot(q_vs_snow_full, aes(x=mean_ndsi, y=median_q, color=wtr_yr))+
   geom_point()+
-  theme_few()
+  labs(x = "Mean Snow Cover", y = "Median Discharge (cfs)")
 
 ```
 
@@ -142,6 +151,6 @@ ggplot(q_vs_snow_full, aes(x=mean_ndsi, y=median_q, color=wtr_yr))+
 
 ggplot(q_vs_snow_full, aes(x=max_ndsi, y=median_q, color=wtr_yr))+
   geom_point()+
-  theme_few()
+  labs(x = "Max Snow Cover", y = "Median Discharge (cfs)")
 
 ```
